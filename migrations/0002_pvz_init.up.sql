@@ -1,0 +1,5 @@
+CREATE TABLE pvz (
+    id SERIAL PRIMARY KEY,
+    city TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
