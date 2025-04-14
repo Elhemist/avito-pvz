@@ -19,7 +19,7 @@ func (h *Handler) CreateReception(c *gin.Context) {
 	var pvzID uuid.UUID
 
 	if err := c.BindJSON(&pvzID); err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, `binding error`)
+		newErrorResponse(c, http.StatusForbidden, `binding error`)
 		return
 	}
 
