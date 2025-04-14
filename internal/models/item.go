@@ -16,7 +16,7 @@ const (
 
 type Item struct {
 	ID          int       `db:"id"`
-	ReceptionID int       `db:"reception_id"`
+	ReceptionID uuid.UUID `db:"reception_id"`
 	PvzID       uuid.UUID `db:"pvz_id"`
 	Type        ItemType  `db:"type"`
 	AddedAt     time.Time `db:"added_at"`
