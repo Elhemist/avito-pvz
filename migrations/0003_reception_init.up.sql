@@ -9,5 +9,6 @@ CREATE INDEX idx_receptions_pvz_id ON receptions(pvz_id);
 
 CREATE UNIQUE INDEX unique_active_reception_per_pvz
 ON receptions(pvz_id)
+WHERE status = 'active';
 
 CREATE INDEX idx_receptions_pvz_id_created_at ON receptions(pvz_id, created_at);
