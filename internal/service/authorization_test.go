@@ -175,11 +175,11 @@ func TestAuthorizationService_Register_Good(t *testing.T) {
 			Role:     request.Role,
 		}
 		expectedUser := models.UserResponse{
-			ID:    uuid.New().String(),
+			ID:    uuid.New(),
 			Email: request.Email,
 			Role:  request.Role,
 		}
-		mockRepo.On("CreateUser", expectedRequest).Return(uuid.MustParse(expectedUser.ID), nil)
+		mockRepo.On("CreateUser", expectedRequest).Return(expectedUser.ID, nil)
 
 		user, err := authService.Register(request)
 		assert.NoError(t, err)

@@ -41,7 +41,7 @@ func (s *AuthorizationService) Register(user models.RegisterRequest) (models.Use
 		logrus.Info(err)
 		return models.UserResponse{}, err
 	}
-	response := models.UserResponse{ID: UserID.String(), Email: user.Email, Role: user.Role}
+	response := models.UserResponse{ID: UserID, Email: user.Email, Role: user.Role}
 	return response, err
 }
 

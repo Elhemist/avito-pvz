@@ -27,9 +27,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	api := router.Group("/api")
 	{
-		api.POST("/register", h.register)
-		api.POST("/login", h.login)
-		api.POST("/dummyLogin", h.dummyLogin)
+		api.POST("/register", h.Register)
+		api.POST("/login", h.Login)
+		api.POST("/dummyLogin", h.DummyLogin)
 
 		api.Use(h.JWTMiddleware())
 		{

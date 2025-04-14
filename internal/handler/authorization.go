@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (h *Handler) login(c *gin.Context) {
+func (h *Handler) Login(c *gin.Context) {
 	var input models.LoginRequest
 
 	if err := c.BindJSON(&input); err != nil {
@@ -27,7 +27,7 @@ func (h *Handler) login(c *gin.Context) {
 	c.JSON(http.StatusOK, token)
 }
 
-func (h *Handler) dummyLogin(c *gin.Context) {
+func (h *Handler) DummyLogin(c *gin.Context) {
 	var req models.DummyLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		newErrorResponse(c, http.StatusBadRequest, `binding error`)
@@ -48,7 +48,7 @@ func (h *Handler) dummyLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, token)
 }
 
-func (h *Handler) register(c *gin.Context) {
+func (h *Handler) Register(c *gin.Context) {
 	var input models.RegisterRequest
 
 	if err := c.BindJSON(&input); err != nil {
