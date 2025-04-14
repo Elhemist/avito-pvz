@@ -22,23 +22,23 @@ func NewReceptionService(receptionRepo repository.ReceptionRepository, pvzRepo r
 func (s *ReceptionService) CreateReception(pvzID uuid.UUID) (models.Reception, error) {
 	exists, err := s.pvzRepo.Exists(pvzID)
 	if err != nil {
-		return models.Reception{}, fmt.Errorf("failed to check PVZ existence: %w", err)
+		return models.Reception{}, fmt.Errorf("failed to check PVZ existence: %s", err.Error())
 	}
 	if !exists {
-		return models.Reception{}, fmt.Errorf("PVZ: %d does not exist", pvzID)
+		return models.Reception{}, fmt.Errorf("PVZ: %s does not exist", pvzID.String())
 	}
 
 	activeReception, err := s.receptionRepo.GetActiveReception(pvzID)
 	if err == nil {
-		return models.Reception{}, fmt.Errorf("reception get error: %d", pvzID)
+		return models.Reception{}, fmt.Errorf("reception get error: %s", pvzID.String())
 	}
 	if (activeReception != models.Reception{}) {
-		return models.Reception{}, fmt.Errorf("an active reception already exists for PVZ: %d", pvzID)
+		return models.Reception{}, fmt.Errorf("an active reception already exists for PVZ: %s", pvzID.String())
 	}
 
 	reception, err := s.receptionRepo.CreateReception(pvzID)
 	if err != nil {
-		return models.Reception{}, fmt.Errorf("failed to create reception: %w", err)
+		return models.Reception{}, fmt.Errorf("failed to create reception: %s", err.Error())
 	}
 
 	return reception, nil

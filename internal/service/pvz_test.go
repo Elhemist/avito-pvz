@@ -15,10 +15,6 @@ type MockPvzRepository struct {
 	mock.Mock
 }
 
-func (m *MockPvzRepository) Exists(pvzID uuid.UUID) (bool, error) {
-	panic("unimplemented")
-}
-
 func (m *MockPvzRepository) CreatePvz(city string) (models.PVZ, error) {
 	args := m.Called(city)
 	return args.Get(0).(models.PVZ), args.Error(1)
@@ -27,30 +23,6 @@ func (m *MockPvzRepository) CreatePvz(city string) (models.PVZ, error) {
 func (m *MockPvzRepository) GetPVZList(limit, offset int) ([]models.PVZ, error) {
 	args := m.Called(limit, offset)
 	return args.Get(0).([]models.PVZ), args.Error(1)
-}
-
-type MockReceptionRepository struct {
-	mock.Mock
-}
-
-func (m *MockReceptionRepository) AddItem(pvzID uuid.UUID, itemType string) (models.Item, error) {
-	panic("unimplemented")
-}
-
-func (m *MockReceptionRepository) CloseReception(receptionID uuid.UUID) error {
-	panic("unimplemented")
-}
-
-func (m *MockReceptionRepository) CreateReception(pvzID uuid.UUID) (models.Reception, error) {
-	panic("unimplemented")
-}
-
-func (m *MockReceptionRepository) DeleteItem(pvzID uuid.UUID) error {
-	panic("unimplemented")
-}
-
-func (m *MockReceptionRepository) GetActiveReception(pvzID uuid.UUID) (models.Reception, error) {
-	panic("unimplemented")
 }
 
 func (m *MockReceptionRepository) GetReceptionsWithProducts(pvzID uuid.UUID, start, end *time.Time) ([]models.Reception, error) {
