@@ -30,30 +30,10 @@ type ReceptionRepository interface {
 	GetItemsByReceptionID(receptionID uuid.UUID) ([]models.Item, error)
 }
 
-// type TransfersRepository interface {
-// 	GetUserTransfersSent(userID uuid.UUID) ([]models.CoinTransfers, error)
-// 	GetUserTransfersReceived(userID uuid.UUID) ([]models.CoinTransfers, error)
-// }
-
-// type WalletRepository interface {
-// 	GetUserWallet(userId uuid.UUID) (models.Wallet, error)
-// 	CreateTransaction(senderWallet, receiverWallet uuid.UUID, amount int) error
-// }
-
-// type InventoryRepository interface {
-// 	GetUserInventory(userID uuid.UUID) ([]models.UserInventoryItem, error)
-// 	GetItemById(itemID int) (models.MerchItem, error)
-// 	GetItemByName(itemName string) (models.MerchItem, error)
-// 	BuyItem(userID, walletID uuid.UUID, itemId int) error
-// }
-
 type Repository struct {
 	UserRepository
 	PvzRepository
 	ReceptionRepository
-	// TransfersRepository
-	// InventoryRepository
-	// WalletRepository
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
@@ -61,8 +41,5 @@ func NewRepository(db *sqlx.DB) *Repository {
 		UserRepository:      NewUserPostgres(db),
 		PvzRepository:       NewPvzPostgres(db),
 		ReceptionRepository: NewReceptionPostgres(db),
-		// WalletRepository:    NewWalletPostgres(db),
-		// InventoryRepository: NewInventoryPostgres(db),
-		// TransfersRepository: NewTransfersPostgres(db),
 	}
 }
