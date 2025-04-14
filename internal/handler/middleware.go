@@ -41,17 +41,3 @@ func (h *Handler) JWTMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-// func getUserId(c *gin.Context) (uuid.UUID, error) {
-// 	id, ok := c.Get(userCtx)
-// 	if !ok {
-// 		return uuid.Nil, fmt.Errorf("user id not found")
-// 	}
-
-// 	idUuid, ok := id.(uuid.UUID)
-// 	if !ok {
-// 		return uuid.Nil, fmt.Errorf("user id is of invalid type")
-// 	}
-
-// 	return idUuid, nil
-// }
