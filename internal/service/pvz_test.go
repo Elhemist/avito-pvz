@@ -1,8 +1,9 @@
-package service
+package service_test
 
 import (
 	"errors"
 	"pvz-test/internal/models"
+	"pvz-test/internal/service"
 	"testing"
 	"time"
 
@@ -38,7 +39,7 @@ func (m *MockReceptionRepository) GetItemsByReceptionID(receptionID uuid.UUID) (
 func TestPvzService_CreatePvz(t *testing.T) {
 	mockPvzRepo := new(MockPvzRepository)
 	mockReceptionRepo := new(MockReceptionRepository)
-	service := NewPvzService(mockPvzRepo, mockReceptionRepo)
+	service := service.NewPvzService(mockPvzRepo, mockReceptionRepo)
 
 	t.Run("Invalid city", func(t *testing.T) {
 		_, err := service.CreatePvz("InvalidCity")
@@ -63,7 +64,7 @@ func TestPvzService_CreatePvz(t *testing.T) {
 func TestPvzService_GetFilteredPVZ_Bad(t *testing.T) {
 	mockPvzRepo := new(MockPvzRepository)
 	mockReceptionRepo := new(MockReceptionRepository)
-	service := NewPvzService(mockPvzRepo, mockReceptionRepo)
+	service := service.NewPvzService(mockPvzRepo, mockReceptionRepo)
 
 	t.Run("Error fetching PVZ list", func(t *testing.T) {
 		mockPvzRepo.On("GetPVZList", 10, 0).Return([]models.PVZ{}, errors.New("database error"))
@@ -78,7 +79,7 @@ func TestPvzService_GetFilteredPVZ_Bad(t *testing.T) {
 func TestPvzService_GetFilteredPVZ_Good(t *testing.T) {
 	mockPvzRepo := new(MockPvzRepository)
 	mockReceptionRepo := new(MockReceptionRepository)
-	service := NewPvzService(mockPvzRepo, mockReceptionRepo)
+	service := service.NewPvzService(mockPvzRepo, mockReceptionRepo)
 
 	t.Run("Successful fetch with receptions and items", func(t *testing.T) {
 		pvzID := uuid.New()

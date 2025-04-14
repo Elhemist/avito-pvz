@@ -1,8 +1,9 @@
-package service
+package service_test
 
 import (
 	"errors"
 	"pvz-test/internal/models"
+	"pvz-test/internal/service"
 	"testing"
 	"time"
 
@@ -15,6 +16,12 @@ import (
 type MockUserRepository struct {
 	mock.Mock
 }
+
+const (
+	salt       = "someSalt"
+	signingKey = "podpis"
+	tokenTTL   = time.Hour / 2
+)
 
 func (m *MockUserRepository) CreateUser(user models.RegisterRequest) (uuid.UUID, error) {
 	args := m.Called(user)
@@ -33,7 +40,7 @@ func (m *MockUserRepository) GetUserById(userID uuid.UUID) (models.User, error) 
 
 func TestAuthorizationService_Login_Bad(t *testing.T) {
 	mockRepo := new(MockUserRepository)
-	authService := NewAuthService(mockRepo)
+	authService := service.NewAuthService(mockRepo)
 
 	t.Run("User not found", func(t *testing.T) {
 		mockRepo.On("GetUserByEmail", "test@example.com").Return(models.User{}, errors.New("Unauthorized"))
@@ -52,7 +59,7 @@ func TestAuthorizationService_Login_Bad(t *testing.T) {
 		mockRepo.On("GetUserByEmail", "test@example.com").Return(models.User{
 			ID:           uuid.New(),
 			Email:        "test@example.com",
-			PasswordHash: GeneratePasswordHash("password"),
+			PasswordHash: service.GeneratePasswordHash("password"),
 		}, errors.New("user not found"))
 
 		token, err := authService.Login(models.LoginRequest{
@@ -71,13 +78,13 @@ func TestAuthorizationService_Login_Bad(t *testing.T) {
 
 func TestAuthorizationService_Login_Good(t *testing.T) {
 	mockRepo := new(MockUserRepository)
-	authService := NewAuthService(mockRepo)
+	authService := service.NewAuthService(mockRepo)
 	t.Run("Successful login", func(t *testing.T) {
 		userID := uuid.New()
 		mockRepo.On("GetUserByEmail", "test@example.com").Return(models.User{
 			ID:           userID,
 			Email:        "test@example.com",
-			PasswordHash: GeneratePasswordHash("password123"),
+			PasswordHash: service.GeneratePasswordHash("password123"),
 			Role:         models.RoleEmployee,
 		}, nil)
 
@@ -90,12 +97,12 @@ func TestAuthorizationService_Login_Good(t *testing.T) {
 		assert.NotEmpty(t, token)
 
 		// Validate the token
-		parsedToken, err := jwt.ParseWithClaims(token, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		parsedToken, err := jwt.ParseWithClaims(token, &service.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 			return []byte(signingKey), nil
 		})
 		assert.NoError(t, err)
 
-		claims, ok := parsedToken.Claims.(*TokenClaims)
+		claims, ok := parsedToken.Claims.(*service.TokenClaims)
 		assert.True(t, ok)
 		assert.Equal(t, userID, claims.UserId)
 		assert.Equal(t, models.RoleEmployee, claims.Role)
@@ -104,7 +111,7 @@ func TestAuthorizationService_Login_Good(t *testing.T) {
 }
 
 func TestAuthorizationService_DummyLogin(t *testing.T) {
-	authService := NewAuthService(nil)
+	authService := service.NewAuthService(nil)
 
 	role := models.RoleEmployee
 	token, err := authService.DummyLogin(role)
@@ -117,10 +124,10 @@ func TestAuthorizationService_DummyLogin(t *testing.T) {
 }
 
 func TestAuthorizationService_ParseToken(t *testing.T) {
-	authService := NewAuthService(nil)
+	authService := service.NewAuthService(nil)
 
 	role := models.RoleModerator
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &TokenClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &service.TokenClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(tokenTTL).Unix(),
 			IssuedAt:  time.Now().Unix(),
@@ -137,7 +144,7 @@ func TestAuthorizationService_ParseToken(t *testing.T) {
 }
 
 func TestAuthorizationService_ParseToken_InvalidToken(t *testing.T) {
-	authService := NewAuthService(nil)
+	authService := service.NewAuthService(nil)
 
 	_, _, err := authService.ParseToken("invalid_token")
 	assert.Error(t, err)
@@ -145,8 +152,62 @@ func TestAuthorizationService_ParseToken_InvalidToken(t *testing.T) {
 
 func TestGeneratePasswordHash(t *testing.T) {
 	password := "password"
-	expectedHash := GeneratePasswordHash(password)
+	expectedHash := service.GeneratePasswordHash(password)
 
-	assert.Equal(t, GeneratePasswordHash(password), expectedHash)
-	assert.NotEqual(t, GeneratePasswordHash("different_password"), expectedHash)
+	assert.Equal(t, service.GeneratePasswordHash(password), expectedHash)
+	assert.NotEqual(t, service.GeneratePasswordHash("different_password"), expectedHash)
+}
+
+func TestAuthorizationService_Register_Good(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	authService := service.NewAuthService(mockRepo)
+
+	t.Run("Successful registration", func(t *testing.T) {
+		request := models.RegisterRequest{
+			Email:    "test@example.com",
+			Password: "password123",
+			Role:     "employee",
+		}
+		hashedPassword := service.GeneratePasswordHash(request.Password)
+		expectedRequest := models.RegisterRequest{
+			Email:    request.Email,
+			Password: hashedPassword,
+			Role:     request.Role,
+		}
+		expectedUser := models.UserResponse{
+			ID:    uuid.New().String(),
+			Email: request.Email,
+			Role:  request.Role,
+		}
+		mockRepo.On("CreateUser", expectedRequest).Return(uuid.MustParse(expectedUser.ID), nil)
+
+		user, err := authService.Register(request)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedUser, user)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestAuthorizationService_Register_Bad(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	authService := service.NewAuthService(mockRepo)
+
+	t.Run("Error during user creation", func(t *testing.T) {
+		request := models.RegisterRequest{
+			Email:    "test@example.com",
+			Password: "password123",
+			Role:     "employee",
+		}
+		hashedPassword := service.GeneratePasswordHash(request.Password)
+		expectedRequest := models.RegisterRequest{
+			Email:    request.Email,
+			Password: hashedPassword,
+			Role:     request.Role,
+		}
+		mockRepo.On("CreateUser", expectedRequest).Return(uuid.Nil, errors.New("database error"))
+
+		_, err := authService.Register(request)
+		assert.EqualError(t, err, "database error")
+		mockRepo.AssertExpectations(t)
+	})
 }

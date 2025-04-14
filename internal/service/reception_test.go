@@ -1,8 +1,9 @@
-package service
+package service_test
 
 import (
 	"errors"
 	"pvz-test/internal/models"
+	"pvz-test/internal/service"
 	"testing"
 	"time"
 
@@ -48,7 +49,7 @@ func (m *MockPvzRepository) Exists(pvzID uuid.UUID) (bool, error) {
 func TestReceptionService_CreateReception(t *testing.T) {
 	mockReceptionRepo := new(MockReceptionRepository)
 	mockPvzRepo := new(MockPvzRepository)
-	service := NewReceptionService(mockReceptionRepo, mockPvzRepo)
+	service := service.NewReceptionService(mockReceptionRepo, mockPvzRepo)
 
 	t.Run("Non-existent PVZ", func(t *testing.T) {
 		pvzID := uuid.New()
@@ -63,7 +64,7 @@ func TestReceptionService_CreateReception(t *testing.T) {
 func TestReceptionService_CloseActiveReception(t *testing.T) {
 	mockReceptionRepo := new(MockReceptionRepository)
 	mockPvzRepo := new(MockPvzRepository)
-	service := NewReceptionService(mockReceptionRepo, mockPvzRepo)
+	service := service.NewReceptionService(mockReceptionRepo, mockPvzRepo)
 
 	t.Run("Error fetching active reception", func(t *testing.T) {
 		pvzID := uuid.New()
@@ -101,7 +102,7 @@ func TestReceptionService_CloseActiveReception(t *testing.T) {
 func TestReceptionService_AddItem(t *testing.T) {
 	mockReceptionRepo := new(MockReceptionRepository)
 	mockPvzRepo := new(MockPvzRepository)
-	service := NewReceptionService(mockReceptionRepo, mockPvzRepo)
+	service := service.NewReceptionService(mockReceptionRepo, mockPvzRepo)
 
 	t.Run("Error adding item", func(t *testing.T) {
 		pvzID := uuid.New()
@@ -129,7 +130,7 @@ func TestReceptionService_AddItem(t *testing.T) {
 func TestReceptionService_DeleteItem(t *testing.T) {
 	mockReceptionRepo := new(MockReceptionRepository)
 	mockPvzRepo := new(MockPvzRepository)
-	service := NewReceptionService(mockReceptionRepo, mockPvzRepo)
+	service := service.NewReceptionService(mockReceptionRepo, mockPvzRepo)
 
 	t.Run("Error deleting item", func(t *testing.T) {
 		pvzID := uuid.New()
