@@ -35,7 +35,7 @@ func (r *ReceptionPostgres) CreateReception(pvzID uuid.UUID) (models.Reception, 
 	}
 	if exists {
 		tx.Rollback()
-		return models.Reception{}, fmt.Errorf("pvz: %d have active reception", pvzID)
+		return models.Reception{}, fmt.Errorf("pvz: %s have active reception", pvzID.String())
 	}
 
 	var reception models.Reception
@@ -91,7 +91,7 @@ func (r *ReceptionPostgres) AddItem(pvzID uuid.UUID, itemType string) (models.It
 func (r *ReceptionPostgres) DeleteItem(pvzID uuid.UUID) error {
 	tx := r.db.MustBegin()
 
-	var receptionID int
+	var receptionID uuid.UUID
 	err := tx.Get(&receptionID, `
 		SELECT id
 		FROM receptions
@@ -102,7 +102,7 @@ func (r *ReceptionPostgres) DeleteItem(pvzID uuid.UUID) error {
 	if err != nil {
 		tx.Rollback()
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("no active reception fo pvz %d", pvzID)
+			return fmt.Errorf("no active reception fo pvz %s", pvzID.String())
 		}
 		return err
 	}
@@ -145,7 +145,7 @@ func (r *ReceptionPostgres) GetActiveReception(pvzID uuid.UUID) (models.Receptio
 		if err == sql.ErrNoRows {
 			return models.Reception{}, nil
 		}
-		return models.Reception{}, fmt.Errorf("failed to get active reception for PVZ %d: %w", pvzID, err)
+		return models.Reception{}, fmt.Errorf("failed to get active reception for PVZ %s: %w", pvzID.String(), err)
 	}
 
 	return reception, nil
@@ -158,7 +158,7 @@ func (r *ReceptionPostgres) CloseReception(receptionID uuid.UUID) error {
 		WHERE id = $1 AND status = 'in_progress'
 	`, receptionID)
 	if err != nil {
-		return fmt.Errorf("failed to close reception %d: %w", receptionID, err)
+		return fmt.Errorf("failed to close reception %s: %w", receptionID.String(), err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
@@ -166,7 +166,7 @@ func (r *ReceptionPostgres) CloseReception(receptionID uuid.UUID) error {
 		return fmt.Errorf("could not determine result of reception close: %w", err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("reception %d is already closed or does not exist", receptionID)
+		return fmt.Errorf("reception %s is already closed or does not exist", receptionID.String())
 	}
 
 	return nil
@@ -174,7 +174,7 @@ func (r *ReceptionPostgres) CloseReception(receptionID uuid.UUID) error {
 
 func (r *ReceptionPostgres) GetReceptionsWithProducts(pvzID uuid.UUID, start, end *time.Time) ([]models.Reception, error) {
 	query := sq.
-		Select("id", "pvz_id", "created_at AS date_time", "status").
+		Select("id", "pvz_id", "created_at", "status").
 		From("receptions").
 		Where(sq.Eq{"pvz_id": pvzID}).
 		OrderBy("created_at DESC")
@@ -199,10 +199,10 @@ func (r *ReceptionPostgres) GetReceptionsWithProducts(pvzID uuid.UUID, start, en
 func (r *ReceptionPostgres) GetItemsByReceptionID(receptionID uuid.UUID) ([]models.Item, error) {
 	var items []models.Item
 	err := r.db.Select(&items, `
-		SELECT id, reception_id, type, added_at AS date_time
-		FROM items
-		WHERE reception_id = $1
-		ORDER BY added_at ASC
-	`, receptionID)
+        SELECT id, reception_id, pvz_id, type, added_at
+        FROM items
+        WHERE reception_id = $1
+        ORDER BY added_at ASC
+    `, receptionID)
 	return items, err
 }
