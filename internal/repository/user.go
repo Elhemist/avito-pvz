@@ -45,8 +45,8 @@ func (r *UserPostgres) GetUserByEmail(email string) (models.User, error) {
 
 func (r *UserPostgres) CreateUser(user models.RegisterRequest) (uuid.UUID, error) {
 	var userID uuid.UUID
-	query := fmt.Sprintf(`INSERT INTO %s (email, password_hash) VALUES ($1, $2) RETURNING id;`, userTable)
-	err := r.db.QueryRow(query, user.Email, user.Password).Scan(&userID)
+	query := fmt.Sprintf(`INSERT INTO %s (email, password_hash, role) VALUES ($1, $2, $3) RETURNING id;`, userTable)
+	err := r.db.QueryRow(query, user.Email, user.Password, user.Role).Scan(&userID)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("user create error: %w", err)
 	}

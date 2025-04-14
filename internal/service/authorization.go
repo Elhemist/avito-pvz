@@ -52,7 +52,7 @@ func (s *AuthorizationService) Login(userReq models.LoginRequest) (string, error
 		return "", err
 	}
 	if user == (models.User{}) {
-		return "", fmt.Errorf("user not found")
+		return "", fmt.Errorf("Unauthorized")
 	} else if user.PasswordHash != GeneratePasswordHash(userReq.Password) {
 		return "", fmt.Errorf("Unauthorized")
 	}

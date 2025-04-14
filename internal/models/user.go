@@ -15,4 +15,5 @@ type User struct {
 	Email        string    `db:"email"`
 	Role         Role      `db:"role"`
 	PasswordHash string    `db:"password_hash"`
+	CreatedAt    string    `db:"created_at"`
 }

@@ -18,7 +18,8 @@ func (h *Handler) login(c *gin.Context) {
 
 	token, err := h.services.Authorization.Login(input)
 	if err != nil {
-		newErrorResponse(c, http.StatusUnauthorized, `password check error`)
+		logrus.Info(err)
+		newErrorResponse(c, http.StatusUnauthorized, `Unauthorized`)
 		return
 	}
 
