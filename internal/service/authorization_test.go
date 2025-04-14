@@ -31,12 +31,12 @@ func (m *MockUserRepository) GetUserById(userID uuid.UUID) (models.User, error) 
 	return args.Get(0).(models.User), args.Error(1)
 }
 
-func TestAuthorizationService_Login(t *testing.T) {
+func TestAuthorizationService_Login_Bad(t *testing.T) {
 	mockRepo := new(MockUserRepository)
 	authService := NewAuthService(mockRepo)
 
 	t.Run("User not found", func(t *testing.T) {
-		mockRepo.On("GetUserByEmail", "test@example.com").Return(models.User{}, errors.New("user not found"))
+		mockRepo.On("GetUserByEmail", "test@example.com").Return(models.User{}, errors.New("Unauthorized"))
 
 		token, err := authService.Login(models.LoginRequest{
 			Email:    "test@example.com",
@@ -44,7 +44,7 @@ func TestAuthorizationService_Login(t *testing.T) {
 		})
 
 		assert.Empty(t, token)
-		assert.EqualError(t, err, "user not found")
+		assert.EqualError(t, err, "Unauthorized")
 		mockRepo.AssertExpectations(t)
 	})
 
@@ -53,7 +53,7 @@ func TestAuthorizationService_Login(t *testing.T) {
 			ID:           uuid.New(),
 			Email:        "test@example.com",
 			PasswordHash: GeneratePasswordHash("password"),
-		}, nil)
+		}, errors.New("user not found"))
 
 		token, err := authService.Login(models.LoginRequest{
 			Email:    "test@example.com",
@@ -65,6 +65,13 @@ func TestAuthorizationService_Login(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 
+	mockRepo = new(MockUserRepository)
+
+}
+
+func TestAuthorizationService_Login_Good(t *testing.T) {
+	mockRepo := new(MockUserRepository)
+	authService := NewAuthService(mockRepo)
 	t.Run("Successful login", func(t *testing.T) {
 		userID := uuid.New()
 		mockRepo.On("GetUserByEmail", "test@example.com").Return(models.User{
