@@ -22,7 +22,7 @@ func (r *PvzPostgres) CreatePvz(city string) (models.PVZ, error) {
 	err := r.db.Get(&pvz, `
 		INSERT INTO pvz (city)
 		VALUES ($1)
-		RETURNING id, city, created_at
+		RETURNING id, city, registration_date
 	`, city)
 	if err != nil {
 		return models.PVZ{}, err
