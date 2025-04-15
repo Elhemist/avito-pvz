@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 )
 
 type PvzPostgres struct {
@@ -17,17 +18,18 @@ func NewPvzPostgres(db *sqlx.DB) *PvzPostgres {
 }
 
 func (r *PvzPostgres) CreatePvz(city string) (models.PVZ, error) {
-
 	var pvz models.PVZ
+	logrus.Infof("Inserting new PVZ with city: %s", city)
 	err := r.db.Get(&pvz, `
-		INSERT INTO pvz (city)
-		VALUES ($1)
-		RETURNING id, city, registration_date
-	`, city)
+        INSERT INTO pvz (city)
+        VALUES ($1)
+        RETURNING id, city, registration_date
+    `, city)
 	if err != nil {
+		logrus.Errorf("Error inserting PVZ: %v", err)
 		return models.PVZ{}, err
 	}
-
+	logrus.Infof("Inserted new PVZ: %v", pvz)
 	return pvz, nil
 }
 
@@ -41,6 +43,7 @@ func (r *PvzPostgres) Exists(pvzID uuid.UUID) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to check PVZ existence: %w", err)
 	}
+	logrus.Infof("PVZ existence check for ID %s: %v", pvzID, exists)
 	return exists, nil
 }
 

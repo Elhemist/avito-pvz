@@ -91,7 +91,7 @@ func TestPvzService_GetFilteredPVZ_Good(t *testing.T) {
 			{ID: receptionID, PVZID: pvzID, Status: "closed", CreatedAt: time.Now()},
 		}
 		expectedItems := []models.Item{
-			{ID: 1, ReceptionID: receptionID, PvzID: pvzID, Type: models.ItemTypeElectronics, AddedAt: time.Now()},
+			{ID: uuid.New(), ReceptionID: receptionID, PvzID: pvzID, Type: models.ItemTypeElectronics, AddedAt: time.Now()},
 		}
 
 		mockPvzRepo.On("GetPVZList", 10, 0).Return(expectedPVZ, nil).Once()

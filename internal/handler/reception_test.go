@@ -49,7 +49,6 @@ func TestHandler_CreateReception(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	router.POST("/reception", func(c *gin.Context) {
-		// Устанавливаем роль в контексте
 		c.Set(roleCtx, models.RoleEmployee)
 		h.CreateReception(c)
 	})
@@ -59,7 +58,9 @@ func TestHandler_CreateReception(t *testing.T) {
 		expectedReception := models.Reception{ID: uuid.New(), PVZID: pvzID, Status: "created"}
 		mockService.On("CreateReception", pvzID).Return(expectedReception, nil)
 
-		body, _ := json.Marshal(pvzID)
+		reqBody := models.CreateReceptionRequest{PvzID: pvzID}
+		body, _ := json.Marshal(reqBody)
+
 		req, _ := http.NewRequest(http.MethodPost, "/reception", bytes.NewBuffer(body))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()

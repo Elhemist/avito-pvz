@@ -1,6 +1,6 @@
 CREATE TABLE goods (
-    id SERIAL PRIMARY KEY,
-    reception_id INTEGER NOT NULL REFERENCES receptions(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reception_id UUID NOT NULL REFERENCES receptions(id) ON DELETE CASCADE,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
     type TEXT NOT NULL
 );

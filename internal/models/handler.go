@@ -47,3 +47,7 @@ type PVZResponse struct {
 	PVZ        PVZ              `json:"pvz"`
 	Receptions []ReceptionBlock `json:"receptions"`
 }
+
+type CreateReceptionRequest struct {
+	PvzID uuid.UUID `json:"pvzId" binding:"required"`
+}

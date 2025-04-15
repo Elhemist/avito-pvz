@@ -29,7 +29,7 @@ func (s *ReceptionService) CreateReception(pvzID uuid.UUID) (models.Reception, e
 	}
 
 	activeReception, err := s.receptionRepo.GetActiveReception(pvzID)
-	if err == nil {
+	if err != nil {
 		return models.Reception{}, fmt.Errorf("reception get error: %s", pvzID.String())
 	}
 	if (activeReception != models.Reception{}) {

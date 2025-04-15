@@ -5,48 +5,42 @@ import (
 	"log"
 	"net/http"
 	"pvz-test/internal/models"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func (h *Handler) CreatePVZ(c *gin.Context) {
 	var req models.PVZRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный формат запроса"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong request format"})
 		return
 	}
 
 	if err := h.validate.Struct(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный город"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Wrong city format"})
 		return
 	}
 
 	userRole, _ := c.Get(roleCtx)
 	if userRole != models.RoleModerator {
-		c.JSON(http.StatusConflict, gin.H{"error": "Доступ запрещен. Только модератор может создавать ПВЗ"})
+		c.JSON(http.StatusConflict, gin.H{"error": "Only moderators can create PVZ"})
 		return
 	}
 
-	newPVZ := &models.PVZ{
-		ID:               uuid.New(),
-		RegistrationDate: time.Now(),
-		City:             req.City,
+	newPVZ, err := h.services.CreatePvz(req.City)
+	if err != nil {
+		log.Println("failed to create pvz:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Pvz creation error"})
+		return
 	}
 
 	c.JSON(http.StatusCreated, newPVZ)
 }
 
 func (h *Handler) GetPVZList(c *gin.Context) {
-	user, exists := c.Get("user")
-	if !exists {
+	userRole, _ := c.Get(roleCtx)
+	if userRole != models.RoleModerator && userRole != models.RoleEmployee {
 		c.JSON(http.StatusUnauthorized, fmt.Errorf("unauthorized"))
-		return
-	}
-	u, ok := user.(models.User)
-	if !ok || (u.Role != "employee" && u.Role != "moderator") {
-		c.JSON(http.StatusForbidden, fmt.Errorf("forbidden"))
 		return
 	}
 

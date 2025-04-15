@@ -101,7 +101,7 @@ func TestHandler_AddItem(t *testing.T) {
 	t.Run("Successful addition", func(t *testing.T) {
 		pvzID := uuid.New()
 		itemType := "electronics"
-		expectedItem := models.Item{ID: 1, ReceptionID: uuid.New(), PvzID: pvzID, Type: models.ItemTypeElectronics}
+		expectedItem := models.Item{ID: uuid.New(), ReceptionID: uuid.New(), PvzID: pvzID, Type: models.ItemTypeElectronics}
 		mockService.On("AddItem", pvzID, itemType).Return(expectedItem, nil)
 
 		body, _ := json.Marshal(models.AddProductRequest{PvzID: pvzID, Type: itemType})

@@ -1,6 +1,6 @@
 CREATE TABLE receptions (
-    id SERIAL PRIMARY KEY,
-    pvz_id INTEGER NOT NULL REFERENCES pvz(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    pvz_id UUID NOT NULL REFERENCES pvz(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     status TEXT NOT NULL
 );

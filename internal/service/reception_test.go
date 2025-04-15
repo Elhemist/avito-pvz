@@ -117,7 +117,7 @@ func TestReceptionService_AddItem(t *testing.T) {
 	t.Run("Successful item addition", func(t *testing.T) {
 		pvzID := uuid.New()
 		itemType := "electronics"
-		expectedItem := models.Item{ID: 1, ReceptionID: uuid.New(), PvzID: pvzID, Type: models.ItemTypeElectronics, AddedAt: time.Now()}
+		expectedItem := models.Item{ID: uuid.New(), ReceptionID: uuid.New(), PvzID: pvzID, Type: models.ItemTypeElectronics, AddedAt: time.Now()}
 		mockReceptionRepo.On("AddItem", pvzID, itemType).Return(expectedItem, nil)
 
 		item, err := service.AddItem(pvzID, itemType)

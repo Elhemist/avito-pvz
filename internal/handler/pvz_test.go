@@ -61,7 +61,7 @@ func TestHandler_GetPVZList(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		router := gin.New()
 		router.GET("/pvz", func(c *gin.Context) {
-			h.GetPVZList(c) // Не устанавливаем пользователя
+			h.GetPVZList(c)
 		})
 
 		req, _ := http.NewRequest(http.MethodGet, "/pvz", nil)
@@ -76,11 +76,12 @@ func TestHandler_GetPVZList(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		router := gin.New()
 		router.GET("/pvz", func(c *gin.Context) {
-			c.Set("user", models.User{Role: models.RoleEmployee}) // Устанавливаем роль сотрудника
+			c.Set("role", models.RoleEmployee)
 			h.GetPVZList(c)
 		})
 
 		req, _ := http.NewRequest(http.MethodGet, "/pvz?startDate=invalid-date", nil)
+		req.Header.Set("Authorization", "Bearer dummy-token")
 		w := httptest.NewRecorder()
 
 		router.ServeHTTP(w, req)

@@ -17,7 +17,7 @@ const NEW_USER_BALANCE = 1000
 const (
 	salt       = "someSalt"
 	signingKey = "podpis"
-	tokenTTL   = time.Hour / 2
+	tokenTTL   = time.Hour * 100
 )
 
 type TokenClaims struct {

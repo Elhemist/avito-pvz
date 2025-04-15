@@ -59,7 +59,7 @@ func (r *ReceptionPostgres) CreateReception(pvzID uuid.UUID) (models.Reception, 
 func (r *ReceptionPostgres) AddItem(pvzID uuid.UUID, itemType string) (models.Item, error) {
 	tx := r.db.MustBegin()
 
-	var receptionID int
+	var receptionID uuid.UUID
 	err := tx.Get(&receptionID, `
 		SELECT id
 		FROM receptions
@@ -76,7 +76,7 @@ func (r *ReceptionPostgres) AddItem(pvzID uuid.UUID, itemType string) (models.It
 	}
 	var item models.Item
 	err = tx.Get(&item, `
-		INSERT INTO items (reception_id, pvz_id, type, added_at)
+		INSERT INTO goods (reception_id, pvz_id, type, added_at)
 		VALUES ($1, $2, $3, NOW())
 		RETURNING *
 	`, receptionID, pvzID, itemType)
@@ -102,7 +102,7 @@ func (r *ReceptionPostgres) DeleteItem(pvzID uuid.UUID) error {
 	if err != nil {
 		tx.Rollback()
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("no active reception fo pvz %s", pvzID.String())
+			return fmt.Errorf("no active reception for pvz %s", pvzID.String())
 		}
 		return err
 	}
@@ -110,7 +110,7 @@ func (r *ReceptionPostgres) DeleteItem(pvzID uuid.UUID) error {
 	var item models.Item
 	err = tx.Get(&item, `
 		SELECT id, reception_id, pvz_id, type, added_at
-		FROM items
+		FROM goods
 		WHERE reception_id = $1
 		ORDER BY added_at DESC
 		LIMIT 1
@@ -121,7 +121,7 @@ func (r *ReceptionPostgres) DeleteItem(pvzID uuid.UUID) error {
 	}
 
 	_, err = tx.Exec(`
-		DELETE FROM items
+		DELETE FROM goods
 		WHERE id = $1
 	`, item.ID)
 	if err != nil {

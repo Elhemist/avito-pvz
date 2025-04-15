@@ -8,9 +8,9 @@ import (
 
 type Reception struct {
 	ID        uuid.UUID `json:"id" db:"id"`
-	PVZID     uuid.UUID `json:"pvz_id" db:"pvz_id"`
+	PVZID     uuid.UUID `json:"pvzId" db:"pvz_id"`
 	Status    string    `json:"status" db:"status"`
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	CreatedAt time.Time `json:"dateTime" db:"created_at"`
 }
 
 type ReceptionBlock struct {

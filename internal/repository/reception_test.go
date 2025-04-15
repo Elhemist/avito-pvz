@@ -139,34 +139,49 @@ func TestReceptionPostgres_AddItem_Good(t *testing.T) {
 	sqlxDB := sqlx.NewDb(db, "sqlmock")
 	repo := repository.NewReceptionPostgres(sqlxDB)
 
-	t.Run("Successful item addition", func(t *testing.T) {
-		pvzID := uuid.New()
-		itemType := "electronics"
-		receptionID := 1
-		expectedItem := models.Item{
-			ID:          1,
-			ReceptionID: uuid.New(),
-			PvzID:       pvzID,
-			Type:        models.ItemTypeElectronics,
-			AddedAt:     time.Now(),
-		}
+	fixedTime := time.Date(2025, 4, 16, 22, 29, 15, 0, time.UTC)
 
-		mock.ExpectBegin()
-		mock.ExpectQuery(`SELECT id FROM receptions WHERE pvz_id = \$1 AND status = 'in_progress' ORDER BY created_at DESC LIMIT 1`).
-			WithArgs(pvzID).
-			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(receptionID))
-		mock.ExpectQuery(`INSERT INTO items \(reception_id, pvz_id, type, added_at\) VALUES \(\$1, \$2, \$3, NOW\(\)\) RETURNING \*`).
-			WithArgs(receptionID, pvzID, itemType).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "reception_id", "pvz_id", "type", "added_at"}).
-				AddRow(expectedItem.ID, expectedItem.ReceptionID, expectedItem.PvzID, expectedItem.Type, expectedItem.AddedAt))
-		mock.ExpectCommit()
+	pvzID := uuid.New()
+	receptionID := uuid.New()
+	itemID := uuid.New()
 
-		item, err := repo.AddItem(pvzID, itemType)
-		assert.NoError(t, err)
-		assert.Equal(t, expectedItem, item)
-	})
+	expectedItem := models.Item{
+		ID:          itemID,
+		ReceptionID: receptionID,
+		PvzID:       pvzID,
+		Type:        models.ItemTypeElectronics,
+		AddedAt:     fixedTime,
+	}
 
+	mock.ExpectBegin()
+
+	mock.ExpectQuery(`SELECT id FROM receptions WHERE pvz_id = \$1 AND status = 'in_progress' ORDER BY created_at DESC LIMIT 1`).
+		WithArgs(pvzID).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(receptionID))
+
+	mock.ExpectQuery(`INSERT INTO goods \(reception_id, pvz_id, type, added_at\) VALUES \(\$1, \$2, \$3, NOW\(\)\) RETURNING \*`).
+		WithArgs(receptionID, pvzID, expectedItem.Type).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "reception_id", "pvz_id", "type", "added_at"}).
+			AddRow(
+				expectedItem.ID,
+				expectedItem.ReceptionID,
+				expectedItem.PvzID,
+				expectedItem.Type,
+				expectedItem.AddedAt,
+			))
+
+	mock.ExpectCommit()
+
+	item, err := repo.AddItem(pvzID, string(expectedItem.Type))
+	assert.NoError(t, err, "unexpected error: %v", err)
+
+	assert.Equal(t, expectedItem.ID, item.ID)
+	assert.Equal(t, expectedItem.ReceptionID, item.ReceptionID)
+	assert.Equal(t, expectedItem.PvzID, item.PvzID)
+	assert.Equal(t, expectedItem.Type, item.Type)
+	assert.WithinDuration(t, expectedItem.AddedAt, item.AddedAt, time.Second)
 }
+
 func TestReceptionPostgres_AddItem_Bad(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
@@ -201,17 +216,17 @@ func TestReceptionPostgres_DeleteItem(t *testing.T) {
 	t.Run("Successful item deletion", func(t *testing.T) {
 		pvzID := uuid.New()
 		receptionID := uuid.New()
-		itemID := 1
+		itemID := uuid.New()
 
 		mock.ExpectBegin()
 		mock.ExpectQuery(`SELECT id FROM receptions WHERE pvz_id = \$1 AND status = 'in_progress' ORDER BY created_at DESC LIMIT 1`).
 			WithArgs(pvzID).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(receptionID))
-		mock.ExpectQuery(`SELECT id, reception_id, pvz_id, type, added_at FROM items WHERE reception_id = \$1 ORDER BY added_at DESC LIMIT 1`).
+		mock.ExpectQuery(`SELECT id, reception_id, pvz_id, type, added_at FROM goods WHERE reception_id = \$1 ORDER BY added_at DESC LIMIT 1`).
 			WithArgs(receptionID).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "reception_id", "pvz_id", "type", "added_at"}).
 				AddRow(itemID, receptionID, pvzID, "electronics", time.Now()))
-		mock.ExpectExec(`DELETE FROM items WHERE id = \$1`).
+		mock.ExpectExec(`DELETE FROM goods WHERE id = \$1`).
 			WithArgs(itemID).
 			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
@@ -230,7 +245,7 @@ func TestReceptionPostgres_DeleteItem(t *testing.T) {
 		mock.ExpectRollback()
 
 		err := repo.DeleteItem(pvzID)
-		assert.EqualError(t, err, "no active reception fo pvz "+pvzID.String())
+		assert.EqualError(t, err, "no active reception for pvz "+pvzID.String())
 	})
 }
 
@@ -271,7 +286,7 @@ func TestReceptionPostgres_GetItemsByReceptionID(t *testing.T) {
 		receptionID := uuid.New()
 		pvzID := uuid.New()
 		expectedItems := []models.Item{
-			{ID: 1, ReceptionID: receptionID, PvzID: pvzID, Type: models.ItemTypeElectronics, AddedAt: time.Now()},
+			{ID: uuid.New(), ReceptionID: receptionID, PvzID: pvzID, Type: models.ItemTypeElectronics, AddedAt: time.Now()},
 		}
 
 		mock.ExpectQuery(`SELECT id, reception_id, pvz_id, type, added_at FROM items WHERE reception_id = \$1 ORDER BY added_at ASC`).

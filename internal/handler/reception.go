@@ -16,14 +16,14 @@ func (h *Handler) CreateReception(c *gin.Context) {
 		return
 	}
 
-	var pvzID uuid.UUID
+	var recReq models.CreateReceptionRequest
 
-	if err := c.BindJSON(&pvzID); err != nil {
+	if err := c.BindJSON(&recReq); err != nil {
 		newErrorResponse(c, http.StatusForbidden, `binding error`)
 		return
 	}
 
-	reception, err := h.services.CreateReception(pvzID)
+	reception, err := h.services.CreateReception(recReq.PvzID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

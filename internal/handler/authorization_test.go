@@ -122,7 +122,7 @@ func TestHandler_Register_Bad(t *testing.T) {
 
 		router.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusBadRequest, w.Code) // Исправлено на 400
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
 	t.Run("Validation error", func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestHandler_Register_Bad(t *testing.T) {
 
 		router.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusBadRequest, w.Code) // Исправлено на 400
+		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
 	t.Run("Service error", func(t *testing.T) {
@@ -158,7 +158,7 @@ func TestHandler_Register_Bad(t *testing.T) {
 
 		router.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusInternalServerError, w.Code) // Исправлено на 500
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
 		assert.JSONEq(t, `{"message":"service error"}`, w.Body.String())
 		mockService.AssertExpectations(t)
 	})
