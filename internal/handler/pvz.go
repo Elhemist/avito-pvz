@@ -23,7 +23,7 @@ func (h *Handler) CreatePVZ(c *gin.Context) {
 
 	userRole, _ := c.Get(roleCtx)
 	if userRole != models.RoleModerator {
-		c.JSON(http.StatusConflict, gin.H{"error": "Only moderators can create PVZ"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only moderators can create PVZ"})
 		return
 	}
 
