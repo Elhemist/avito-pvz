@@ -76,10 +76,10 @@ func (r *ReceptionPostgres) AddItem(pvzID uuid.UUID, itemType string) (models.It
 	}
 	var item models.Item
 	err = tx.Get(&item, `
-		INSERT INTO goods (reception_id, pvz_id, type, added_at)
-		VALUES ($1, $2, $3, NOW())
+		INSERT INTO goods (reception_id, type, added_at)
+		VALUES ($1, $2, NOW())
 		RETURNING *
-	`, receptionID, pvzID, itemType)
+	`, receptionID, itemType)
 	if err != nil {
 		tx.Rollback()
 		return models.Item{}, fmt.Errorf("failed to insert item: %w", err)
@@ -109,7 +109,7 @@ func (r *ReceptionPostgres) DeleteItem(pvzID uuid.UUID) error {
 
 	var item models.Item
 	err = tx.Get(&item, `
-		SELECT id, reception_id, pvz_id, type, added_at
+		SELECT id, reception_id, type, added_at
 		FROM goods
 		WHERE reception_id = $1
 		ORDER BY added_at DESC
@@ -199,8 +199,8 @@ func (r *ReceptionPostgres) GetReceptionsWithProducts(pvzID uuid.UUID, start, en
 func (r *ReceptionPostgres) GetItemsByReceptionID(receptionID uuid.UUID) ([]models.Item, error) {
 	var items []models.Item
 	err := r.db.Select(&items, `
-        SELECT id, reception_id, pvz_id, type, added_at
-        FROM items
+        SELECT id, reception_id, type, added_at
+        FROM goods
         WHERE reception_id = $1
         ORDER BY added_at ASC
     `, receptionID)

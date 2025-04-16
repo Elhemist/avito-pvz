@@ -39,7 +39,7 @@ func (h *Handler) CloseReception(c *gin.Context) {
 		return
 	}
 
-	pvzIDStr := c.Query(pvzIdParam)
+	pvzIDStr := c.Param(pvzIdParam)
 	pvzID, err := uuid.Parse(pvzIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fmt.Errorf("%s parse error", pvzIdParam))
@@ -52,7 +52,7 @@ func (h *Handler) CloseReception(c *gin.Context) {
 		return
 	}
 	if (reception == models.Reception{}) {
-		c.JSON(http.StatusInternalServerError, fmt.Errorf("no any active reception for pvz"))
+		c.JSON(http.StatusBadRequest, fmt.Errorf("no active reception for pvz"))
 		return
 	}
 

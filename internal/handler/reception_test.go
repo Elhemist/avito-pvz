@@ -88,7 +88,7 @@ func TestHandler_CloseReception(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	router.GET("/reception/close", func(c *gin.Context) {
+	router.POST("/pvz/:pvzId/close_last_reception", func(c *gin.Context) {
 		c.Set(roleCtx, models.RoleEmployee)
 		h.CloseReception(c)
 	})
@@ -96,9 +96,9 @@ func TestHandler_CloseReception(t *testing.T) {
 	t.Run("Successful closure", func(t *testing.T) {
 		pvzID := uuid.New()
 		expectedReception := models.Reception{ID: uuid.New(), PVZID: pvzID, Status: "closed"}
-		mockService.On("CloseActiveReception", pvzID).Return(expectedReception, nil)
+		mockService.On("CloseActiveReception", pvzID).Return(expectedReception, nil).Once()
 
-		req, _ := http.NewRequest(http.MethodGet, "/reception/close?pvz_id="+pvzID.String(), nil)
+		req, _ := http.NewRequest(http.MethodPost, "/pvz/"+pvzID.String()+"/close_last_reception", nil)
 		w := httptest.NewRecorder()
 
 		router.ServeHTTP(w, req)
@@ -108,7 +108,8 @@ func TestHandler_CloseReception(t *testing.T) {
 	})
 
 	t.Run("Invalid UUID", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodGet, "/reception/close?pvz_id=invalid-uuid", nil)
+		pvzID := "badPvzId"
+		req, _ := http.NewRequest(http.MethodPost, "/pvz/"+pvzID+"/close_last_reception", nil)
 		w := httptest.NewRecorder()
 
 		router.ServeHTTP(w, req)

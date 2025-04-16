@@ -12,7 +12,7 @@ type Handler struct {
 	validate *validator.Validate
 }
 
-const pvzIdParam = "pvz_id"
+const pvzIdParam = "pvzId"
 
 func NewHandler(services *service.Service) *Handler {
 	return &Handler{

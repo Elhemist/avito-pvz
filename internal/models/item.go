@@ -15,9 +15,8 @@ const (
 )
 
 type Item struct {
-	ID          uuid.UUID `db:"id"`
-	ReceptionID uuid.UUID `db:"reception_id"`
-	PvzID       uuid.UUID `db:"pvz_id"`
-	Type        ItemType  `db:"type"`
-	AddedAt     time.Time `db:"added_at"`
+	ID          uuid.UUID `db:"id" json:"id"`
+	ReceptionID uuid.UUID `db:"reception_id" json:"receptionId"`
+	Type        ItemType  `db:"type" json:"type"`
+	AddedAt     time.Time `db:"added_at" json:"dateTime"`
 }
