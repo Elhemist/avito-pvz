@@ -1,6 +1,3 @@
-//go:build skip
-// +build skip
-
 package tests
 
 import (
@@ -19,6 +16,7 @@ const baseURL = "http://localhost:8080/api"
 
 func TestIntegration_ProcessPVZReception(t *testing.T) {
 
+	t.Skip("Skipping test in short mode.")
 	var pvzID uuid.UUID
 	var token string
 
